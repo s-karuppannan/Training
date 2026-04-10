@@ -1,0 +1,85 @@
+a. CRUD Operations Using Spring Boot and MongoDB
+
+MongoDB Configuration (application.properties):
+spring.data.mongodb.uri=mongodb://localhost:27017/mydatabase
+Product Entity:
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+@Document(collection = "products")
+public class Product {
+    @Id
+    private String id;
+    private String name;
+    private double price; 
+}
+Repository Interface:
+@Repository
+public interface ProductRepository extends MongoRepository<Product, String> {}
+REST Controller:
+@RestController
+@RequestMapping("/products")
+public class ProductController {
+    @Autowired private ProductRepository repository;
+    @PostMapping
+    public Product addProduct(@RequestBody Product product) {
+        return repository.save(product);
+    }
+    @GetMapping("/{id}")
+    public Product getProduct(@PathVariable String id) {
+        return repository.findById(id).orElseThrow();
+    }
+    @GetMapping
+    public List<Product> getAllProducts() {
+        return repository.findAll();
+    }
+    @PutMapping("/{id}")
+    public Product updateProduct(@PathVariable String id, @RequestBody Product newProduct) {
+        return repository.findById(id).map(product -> {
+            product.setName(newProduct.getName());
+            product.setPrice(newProduct.getPrice());
+            return repository.save(product);
+        }).orElseThrow();
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteProduct(@PathVariable String id) {
+        repository.deleteById(id);
+    }
+}
+
+<------------------------------------------------------------------------------------------->
+
+b Implementing Query Methods in MongoDB Using Spring Boot
+
+MongoDB Configuration (application.properties):
+spring.data.mongodb.uri=mongodb://localhost:27017/mydatabase
+Product Entity:
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+@Document(collection = "products")
+public class Product {
+    @Id
+    private String id;
+    private String name;
+    private double price; 
+}
+Custom Repository Interface:
+@Repository
+public interface ProductRepository extends MongoRepository<Product, String> {
+    List<Product> findByNameContaining(String name);
+    List<Product> findByPriceBetween(double minPrice, double maxPrice);
+}
+REST Controller:
+@RestController
+@RequestMapping("/products")
+public class ProductController {
+    @Autowired private ProductRepository repository;
+    @GetMapping("/search")
+    public List<Product> searchProducts(@RequestParam String name) {
+        return repository.findByNameContaining(name);
+    }
+    @GetMapping("/price-range")
+    public List<Product> getProductsByPriceRange(@RequestParam double min, @RequestParam double max) {
+        return repository.findByPriceBetween(min, max);
+    }
+}

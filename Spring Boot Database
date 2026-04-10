@@ -1,0 +1,68 @@
+a. Connecting Spring Boot with MySQL Database
+
+
+MySQL Configuration(application.properties):
+spring.datasource.url=jdbc:mysql://localhost:3306/mydb
+spring.datasource.username=root
+spring.datasource.password=root
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+Customer Entity:
+@Entity
+public class Customer {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private String email;
+    // Getters and Setters}
+Repository Interface:
+@Repository
+public interface CustomerRepository extends JpaRepository<Customer, Long> {}
+Rest Controller:
+@RestController
+@RequestMapping("/customers")
+public class CustomerController {
+    @Autowired private CustomerRepository repository;
+    @PostMapping
+    public Customer addCustomer(@RequestBody Customer customer) {
+        return repository.save(customer);
+    }
+    @GetMapping("/{id}")
+    public Customer getCustomer(@PathVariable Long id) {
+        return repository.findById(id).orElseThrow();
+    }
+}
+
+<-------------------------------------------------------------------------->
+
+b. Using MongoDB with Spring Boot
+MongoDB Configuration(application.properties):
+spring.data.mongodb.uri=mongodb://localhost:27017/mydatabase
+Product Entity:
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+@Document(collection = "products")
+public class Product {
+    @Id
+    private String id;
+    private String name;
+    private double price; 
+}
+Repository Interface:
+@Repository
+public interface ProductRepository extends MongoRepository<Product, String> {}
+REST Controller:
+@RestController
+@RequestMapping("/products")
+public class ProductController {
+    @Autowired private ProductRepository repository;
+    @PostMapping
+    public Product addProduct(@RequestBody Product product) {
+        return repository.save(product);
+    }
+    @GetMapping("/{id}")
+    public Product getProduct(@PathVariable String id) {
+        return repository.findById(id).orElseThrow();
+    }
+}
